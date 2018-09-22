@@ -6,7 +6,7 @@
   "scripts": {
     "test": "nodemon --exec \"mocha dist/test\"",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/app/server.js"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,10 @@
     "chai": "^4.1.2",
     "express": "4.16.3",
     "mongoose": "5.2.15",
-    "supertest": "^3.3.0"
+    "pg": "^7.4.3",
+    "supertest": "^3.3.0",
+    "swig": "^1.4.2",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.5",

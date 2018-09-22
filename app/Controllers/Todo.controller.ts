@@ -1,72 +1,122 @@
-import Todo from "../Models/Todo.model";
 import { Request, Response } from "express";
+const pg = require("pg");
+const uuid = require("uuid");
 
-interface todoTemplate {
-  title: string,
-  description: string,
-  done: boolean
-}
 export default class TodoController {
   public createNewTask(req: Request, res: Response) {
-    let newTodo = new Todo();
-    newTodo.title = req.body.title;
-    newTodo.description = req.body.description;
-    newTodo.save((err, todo) => {
-      if (err) res.send(err);
-
-      res.send(todo);
-    });
+    const client = new pg.Client("postgres://localhost/todo");
+    client.connect();
+    const task = req.body;
+    (async function hit() {
+      try {
+        const response = await client.query(
+          `INSERT INTO todo_info(id,title,discription,done)
+          VALUES($1,$2,$3,$4)`,
+          [uuid(), task.title, task.discription]
+        );
+        client.end();
+        const resSend = response.rowCount
+          ? { message: "New Todo added", status: true }
+          : { message: "Can't add new Todo", status: false };
+        res.status(200).send([resSend]);
+      } catch (err) {
+        res
+          .status(500)
+          .send([{ message: "Can't add new Todo", status: false }, err]);
+      }
+    })();
   }
 
   public getAllTasks(req: Request, res: Response) {
-    let query = Todo.find();
-    query.select("_id title description done");
-    query.exec((err, todos) => {
-      if (err)
-        res.send({ status: 'error', message: 'Error in fetching your result'})
-      else if(todos.length === 0)
-        res.send({ status: 'error', message: 'No tasks found'});
-      else
-        res.send(todos);
-    });
+    console.log("hello getalltask");
+    const client = new pg.Client("postgres://localhost/todo");
+    client.connect();
+    (async function hit() {
+      try {
+        const response = await client.query("SELECT * FROM todo_info");
+        client.end();
+        res.status(200).send(response.rows);
+        console.log("inside try block");
+      } catch (err) {
+        res
+          .status(500)
+          .send([{ message: "Server Not Found Error!", status: false }, err]);
+        console.log("inside catch block");
+      }
+    })();
   }
 
   public getTaskById(req: Request, res: Response) {
-    let taskId = req.params.id;
-    let query = Todo.findById(taskId);
-    query.select("_id title description done");
-    query.exec((err, todo) => {
-      if (err)
-        res.send({ status: 'error', message: 'Error in fetching your result'})
-      else if(todo === null) {
-        res.send({ status: 'error', message: 'No task found'} );
-      } else {
-        res.send(todo);
+    const client = new pg.Client("postgres://localhost/todo");
+    client.connect();
+    const { id } = req.params;
+    (async function hit() {
+      try {
+        const response = await client.query(
+          "SELECT * FROM todo_info WHERE ID = $1",
+          [id]
+        );
+        client.end();
+        res.status(200).send(response.rows);
+      } catch (err) {
+        res
+          .status(500)
+          .send([{ message: "Server Error!", status: false }, err]);
       }
-    });
+    })();
   }
 
   public deleteTask(req: Request, res: Response) {
-    let taskId = req.params.id;
-    Todo.findByIdAndRemove(taskId, (err, result) => {
-      if(err) res.send({status: 'error', message: 'Error in deleting the task'});
-      else if(result === null) res.send({status: "error", message: "It seems like this task has already been deleted."});
-      else res.send({status: "ok", message: 'Task deleted successfully'});
-    });
+    const client = new pg.Client("postgres://localhost/todo");
+    client.connect();
+    const { id } = req.params;
+    (async function hit() {
+      try {
+        const response = await client.query(
+          `DELETE FROM todo_info WHERE ID = $1`,
+          [id]
+        );
+        client.end();
+        const resSend = response.rowCount
+          ? { message: "Todo deleted successfully", status: true }
+          : { message: "Unable deleted a todo", status: false };
+        res.status(200).send([resSend]);
+      } catch (err) {
+        res
+          .status(500)
+          .send([{ message: "Unable to delete", status: false }, err]);
+      }
+    })();
   }
 
   public updateTask(req: Request, res: Response) {
-    let taskId = req.params.id;
-    let task: todoTemplate = {
-      title: req.body.title,
-      description: req.body.description,
-      done: req.body.done
-    };
-    Todo.findByIdAndUpdate(taskId, task, {new: true, select: "_id title description done"}, (err, result) => {
-      if(err)
-        res.send({status: "error", message: "We are unable to save this task. please try later"});
-      else
-        res.send({status: "ok", message: "Task Updated", newTask: result});
-    });
+    const client = new pg.Client("postgres://localhost/todo");
+    client.connect();
+    const { done } = req.body;
+    const { id } = req.params;
+    (async function hit() {
+      try {
+        const response = await client.query(
+          `UPDATE todo_info 
+        SET DONE = $1
+        WHERE ID = $2`,
+          [done, id]
+        );
+        client.end();
+        const resSend = response.rowCount
+          ? done
+            ? { message: "Todo added to done list successfully", status: true }
+            : {
+                message: "Todo added to undone list successfully",
+                status: true
+              }
+          : { message: "Unable update a todo", status: false };
+        res.status(200).send([resSend]);
+      } catch (err) {
+        res
+          .status(500)
+          .send([{ message: "Unable to update", status: false }, err]);
+      }
+    })();
   }
 }

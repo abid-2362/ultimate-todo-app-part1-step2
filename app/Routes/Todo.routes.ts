@@ -1,6 +1,8 @@
-import TodoController from '../Controllers/Todo.controller';
-import * as Express from 'express';
-import config from '../serverConfig';
+import TodoController from "../Controllers/Todo.controller";
+import * as Express from "express";
+import config from "../serverConfig";
+const pg = require("pg");
+
 export default class TodoRoutes {
   private todoController: TodoController;
   private apiUrl: string;
@@ -11,18 +13,20 @@ export default class TodoRoutes {
 
   public routes(app: Express.Application) {
     // to create a new task, post request
-    app.route(this.apiUrl+'/tasks').post(this.todoController.createNewTask)
+    app.route(this.apiUrl + "/tasks").post(this.todoController.createNewTask);
 
     // to retrieve all tasks, get request
-    app.route(this.apiUrl+'/tasks').get(this.todoController.getAllTasks);
+    app.route(this.apiUrl + "/tasks").get(this.todoController.getAllTasks);
 
     // get task by id.
-    app.route(this.apiUrl+'/tasks/:id').get(this.todoController.getTaskById);
+    app.route(this.apiUrl + "/tasks/:id").get(this.todoController.getTaskById);
 
     // update an existing task
-    app.route(this.apiUrl+'/tasks/:id').put(this.todoController.updateTask);
+    app.route(this.apiUrl + "/tasks/:id").put(this.todoController.updateTask);
 
     // delete task
-    app.route(this.apiUrl+'/tasks/:id').delete(this.todoController.deleteTask);
+    app
+      .route(this.apiUrl + "/tasks/:id")
+      .delete(this.todoController.deleteTask);
   }
 }

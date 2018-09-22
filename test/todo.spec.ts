@@ -1,7 +1,6 @@
 import "mocha";
 
 import * as assert from "assert";
-import Todo_Model from "../app/Models/Todo.model";
 
 const app = require("../app/server");
 const request = require("supertest");
