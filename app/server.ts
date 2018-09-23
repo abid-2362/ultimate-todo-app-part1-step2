@@ -3,8 +3,8 @@ import serverConfig from "./serverConfig";
 import DBConnect from './dbConnection';
 
 // let db = new DBConnect('localhost', 'node_todo', 'root', '');
-let db = new DBConnect();
-let client = db.connect();
+// let db = new DBConnect();
+// let client = db.connect();
 // const seed = () => {
 //   const qry = `DROP TABLE IF EXISTS todo_info;
 //   CREATE TABLE todo_info {
