@@ -44,29 +44,43 @@ var TodoController = /** @class */ (function () {
     TodoController.prototype.createNewTask = function (req, res) {
         var client = new dbConnection_1.default().connect();
         var task = req.body;
+        var id;
+        if (req.body.id) {
+            id = req.body.id;
+        }
+        else {
+            id = null;
+        }
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
                 var response, resSend, err_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            _a.trys.push([0, 2, , 3]);
-                            return [4 /*yield*/, client.query("INSERT INTO todo_info(title,discription,done)\n          VALUES($1,$2,$3)", [task.title, task.description, task.done])];
+                            _a.trys.push([0, 5, , 6]);
+                            if (!id) return [3 /*break*/, 2];
+                            return [4 /*yield*/, client.query("INSERT INTO todo_info(id,title,discription,done)\n            VALUES($1,$2,$3,$4)", [id, task.title, task.description, task.done])];
                         case 1:
                             response = _a.sent();
+                            return [3 /*break*/, 4];
+                        case 2: return [4 /*yield*/, client.query("INSERT INTO todo_info(title,discription,done)\n            VALUES($1,$2,$3)", [task.title, task.description, task.done])];
+                        case 3:
+                            response = _a.sent();
+                            _a.label = 4;
+                        case 4:
                             client.end();
                             resSend = response.rowCount
                                 ? { message: "New Todo added", status: true }
                                 : { message: "Can't add new Todo", status: false };
                             res.status(200).send([resSend]);
-                            return [3 /*break*/, 3];
-                        case 2:
+                            return [3 /*break*/, 6];
+                        case 5:
                             err_1 = _a.sent();
                             res
                                 .status(500)
                                 .send([{ message: "Can't add new Todo", status: false }, err_1]);
-                            return [3 /*break*/, 3];
-                        case 3: return [2 /*return*/];
+                            return [3 /*break*/, 6];
+                        case 6: return [2 /*return*/];
                     }
                 });
             });
@@ -145,14 +159,21 @@ var TodoController = /** @class */ (function () {
                             client.end();
                             resSend = response.rowCount
                                 ? { message: "Todo deleted successfully", status: true }
-                                : { message: "Unable deleted a todo, it might already have been deleted", status: false };
+                                : {
+                                    message: "Unable deleted a todo, it might already have been deleted",
+                                    status: false
+                                };
                             res.status(200).send([resSend]);
                             return [3 /*break*/, 3];
                         case 2:
                             err_4 = _a.sent();
-                            res
-                                .status(500)
-                                .send([{ message: "Unable deleted a todo, it might already have been deleted", status: false }, err_4]);
+                            res.status(500).send([
+                                {
+                                    message: "Unable deleted a todo, it might already have been deleted",
+                                    status: false
+                                },
+                                err_4
+                            ]);
                             return [3 /*break*/, 3];
                         case 3: return [2 /*return*/];
                     }
@@ -175,9 +196,9 @@ var TodoController = /** @class */ (function () {
                         case 1:
                             response = _a.sent();
                             client.end();
-                            resSend = response.rowCount ?
-                                { message: "Todo updated successfully", status: true } :
-                                { message: "Unable update a todo", status: false };
+                            resSend = response.rowCount
+                                ? { message: "Todo updated successfully", status: true }
+                                : { message: "Unable update a todo", status: false };
                             res.status(200).send([resSend]);
                             return [3 /*break*/, 3];
                         case 2:

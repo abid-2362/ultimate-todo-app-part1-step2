@@ -11,7 +11,7 @@ const should = require("should");
 //     assert(2 + 4 === 6);
 //   });
 // });
-
+let id = Math.ceil(Math.random() * 1000000);
 // Get Todo
 describe("Get Todos", () => {
   it("Retrieve list of tasks", async () => {
@@ -24,8 +24,7 @@ describe("Get Todos", () => {
 describe("GET a single Todo", function() {
   it("Retrieve a specific task", function(done) {
     request(app)
-      .get("/todo/api/v1.0/tasks/:id")
-      .send("{}")
+      .get("/todo/api/v1.0/tasks/"+id)
       .expect(200)
       .end(function(err, res) {
         done();
@@ -39,6 +38,7 @@ describe("Post Todo", () => {
     request(app)
       .post("/todo/api/v1.0/tasks")
       .send({
+        id: id,
         title: "test_title",
         description: "test_description"
       })
@@ -54,8 +54,8 @@ describe("Post Todo", () => {
 describe("Update Todo", function() {
   it("Update an existing task", function(done) {
     request(app)
-      .put("/todo/api/v1.0/tasks:id")
-      .send("{}")
+      .put("/todo/api/v1.0/tasks/"+id)
+      .send({title: 'test update', description: 'updating testing', done: "true"})
       .expect(200)
       .end(function(err, res) {
         done();
@@ -67,8 +67,7 @@ describe("Update Todo", function() {
 describe("DELTE Todo", function() {
   it("Delete an existing task", function(done) {
     request(app)
-      .delete("/todo/api/v1.0/tasks:id")
-      .send("{}")
+      .delete("/todo/api/v1.0/tasks/"+id)
       .expect(200)
       .end(function(err, res) {
         done();

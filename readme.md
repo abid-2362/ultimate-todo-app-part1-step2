@@ -1,2 +1,3 @@
-# Todo Rest API in TpyeScript and NodeJS
-it is very initial step in learning TypeScript and creating REST API in TypeScript with NodeJS
+# Todo Rest API in TpyeScript and NodeJS using PostgreSQL
+Part 1 Step 2
+Ultimate Todo API with NodeJS and PostgreSQL

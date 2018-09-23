@@ -1,18 +1,33 @@
 import { Request, Response } from "express";
 const pg = require("pg");
 const uuid = require("uuid");
-import DBConnect from '../dbConnection';
+import DBConnect from "../dbConnection";
 export default class TodoController {
   public createNewTask(req: Request, res: Response) {
     let client = new DBConnect().connect();
     const task = req.body;
+    let id: number;
+    if (req.body.id) {
+      id = req.body.id;
+    } else {
+      id = null;
+    }
     (async function hit() {
+      let response: any;
       try {
-        const response = await client.query(
-          `INSERT INTO todo_info(title,discription,done)
-          VALUES($1,$2,$3)`,
-          [task.title, task.description, task.done]
-        );
+        if (id) {
+          response = await client.query(
+            `INSERT INTO todo_info(id,title,discription,done)
+            VALUES($1,$2,$3,$4)`,
+            [id,task.title, task.description, task.done]
+          );
+        } else {
+          response = await client.query(
+            `INSERT INTO todo_info(title,discription,done)
+            VALUES($1,$2,$3)`,
+            [task.title, task.description, task.done]
+          );
+        }
         client.end();
         const resSend = response.rowCount
           ? { message: "New Todo added", status: true }
@@ -74,12 +89,21 @@ export default class TodoController {
         client.end();
         const resSend = response.rowCount
           ? { message: "Todo deleted successfully", status: true }
-          : { message: "Unable deleted a todo, it might already have been deleted", status: false };
+          : {
+              message:
+                "Unable deleted a todo, it might already have been deleted",
+              status: false
+            };
         res.status(200).send([resSend]);
       } catch (err) {
-        res
-          .status(500)
-          .send([{ message: "Unable deleted a todo, it might already have been deleted", status: false }, err]);
+        res.status(500).send([
+          {
+            message:
+              "Unable deleted a todo, it might already have been deleted",
+            status: false
+          },
+          err
+        ]);
       }
     })();
   }
@@ -97,9 +121,9 @@ export default class TodoController {
           [title, description, done, id]
         );
         client.end();
-        const resSend = response.rowCount ?
-            { message: "Todo updated successfully", status: true } :
-            { message: "Unable update a todo", status: false };
+        const resSend = response.rowCount
+          ? { message: "Todo updated successfully", status: true }
+          : { message: "Unable update a todo", status: false };
         res.status(200).send([resSend]);
       } catch (err) {
         res
