@@ -37,12 +37,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var pg = require("pg");
 var uuid = require("uuid");
+var dbConnection_1 = require("../dbConnection");
 var TodoController = /** @class */ (function () {
     function TodoController() {
     }
     TodoController.prototype.createNewTask = function (req, res) {
-        var client = new pg.Client("postgres://localhost/todo");
-        client.connect();
+        var client = new dbConnection_1.default().connect();
         var task = req.body;
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
@@ -51,7 +51,7 @@ var TodoController = /** @class */ (function () {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2, , 3]);
-                            return [4 /*yield*/, client.query("INSERT INTO todo_info(id,title,discription,done)\n          VALUES($1,$2,$3,$4)", [uuid(), task.title, task.discription])];
+                            return [4 /*yield*/, client.query("INSERT INTO todo_info(title,discription,done)\n          VALUES($1,$2,$3)", [task.title, task.description, task.done])];
                         case 1:
                             response = _a.sent();
                             client.end();
@@ -74,8 +74,7 @@ var TodoController = /** @class */ (function () {
     };
     TodoController.prototype.getAllTasks = function (req, res) {
         console.log("hello getalltask");
-        var client = new pg.Client("postgres://localhost/todo");
-        client.connect();
+        var client = new dbConnection_1.default().connect();
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
                 var response, err_2;
@@ -95,7 +94,6 @@ var TodoController = /** @class */ (function () {
                             res
                                 .status(500)
                                 .send([{ message: "Server Not Found Error!", status: false }, err_2]);
-                            console.log("inside catch block");
                             return [3 /*break*/, 3];
                         case 3: return [2 /*return*/];
                     }
@@ -104,8 +102,7 @@ var TodoController = /** @class */ (function () {
         })();
     };
     TodoController.prototype.getTaskById = function (req, res) {
-        var client = new pg.Client("postgres://localhost/todo");
-        client.connect();
+        var client = new dbConnection_1.default().connect();
         var id = req.params.id;
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
@@ -133,8 +130,7 @@ var TodoController = /** @class */ (function () {
         })();
     };
     TodoController.prototype.deleteTask = function (req, res) {
-        var client = new pg.Client("postgres://localhost/todo");
-        client.connect();
+        var client = new dbConnection_1.default().connect();
         var id = req.params.id;
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
@@ -149,14 +145,14 @@ var TodoController = /** @class */ (function () {
                             client.end();
                             resSend = response.rowCount
                                 ? { message: "Todo deleted successfully", status: true }
-                                : { message: "Unable deleted a todo", status: false };
+                                : { message: "Unable deleted a todo, it might already have been deleted", status: false };
                             res.status(200).send([resSend]);
                             return [3 /*break*/, 3];
                         case 2:
                             err_4 = _a.sent();
                             res
                                 .status(500)
-                                .send([{ message: "Unable to delete", status: false }, err_4]);
+                                .send([{ message: "Unable deleted a todo, it might already have been deleted", status: false }, err_4]);
                             return [3 /*break*/, 3];
                         case 3: return [2 /*return*/];
                     }
@@ -165,9 +161,8 @@ var TodoController = /** @class */ (function () {
         })();
     };
     TodoController.prototype.updateTask = function (req, res) {
-        var client = new pg.Client("postgres://localhost/todo");
-        client.connect();
-        var done = req.body.done;
+        var client = new dbConnection_1.default().connect();
+        var _a = req.body, title = _a.title, description = _a.description, done = _a.done;
         var id = req.params.id;
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
@@ -176,25 +171,20 @@ var TodoController = /** @class */ (function () {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2, , 3]);
-                            return [4 /*yield*/, client.query("UPDATE todo_info \n        SET DONE = $1\n        WHERE ID = $2", [done, id])];
+                            return [4 /*yield*/, client.query("UPDATE todo_info\n            SET (title, discription, done) = ($1, $2, $3)\n            WHERE id = $4", [title, description, done, id])];
                         case 1:
                             response = _a.sent();
                             client.end();
-                            resSend = response.rowCount
-                                ? done
-                                    ? { message: "Todo added to done list successfully", status: true }
-                                    : {
-                                        message: "Todo added to undone list successfully",
-                                        status: true
-                                    }
-                                : { message: "Unable update a todo", status: false };
+                            resSend = response.rowCount ?
+                                { message: "Todo updated successfully", status: true } :
+                                { message: "Unable update a todo", status: false };
                             res.status(200).send([resSend]);
                             return [3 /*break*/, 3];
                         case 2:
                             err_5 = _a.sent();
                             res
                                 .status(500)
-                                .send([{ message: "Unable to update", status: false }, err_5]);
+                                .send([{ message: "Unable to update", status: false }, err_5.message]);
                             return [3 /*break*/, 3];
                         case 3: return [2 /*return*/];
                     }

@@ -1,10 +1,10 @@
 import app from "./app";
 import serverConfig from "./serverConfig";
+import DBConnect from './dbConnection';
 
-const pg = require("pg");
-
-const client = new pg.Client("postgres://localhost/todo");
-
+// let db = new DBConnect('localhost', 'node_todo', 'root', '');
+let db = new DBConnect();
+let client = db.connect();
 // const seed = () => {
 //   const qry = `DROP TABLE IF EXISTS todo_info;
 //   CREATE TABLE todo_info {

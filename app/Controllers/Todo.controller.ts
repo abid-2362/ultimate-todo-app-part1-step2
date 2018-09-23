@@ -1,18 +1,17 @@
 import { Request, Response } from "express";
 const pg = require("pg");
 const uuid = require("uuid");
-
+import DBConnect from '../dbConnection';
 export default class TodoController {
   public createNewTask(req: Request, res: Response) {
-    const client = new pg.Client("postgres://localhost/todo");
-    client.connect();
+    let client = new DBConnect().connect();
     const task = req.body;
     (async function hit() {
       try {
         const response = await client.query(
-          `INSERT INTO todo_info(id,title,discription,done)
-          VALUES($1,$2,$3,$4)`,
-          [uuid(), task.title, task.discription]
+          `INSERT INTO todo_info(title,discription,done)
+          VALUES($1,$2,$3)`,
+          [task.title, task.description, task.done]
         );
         client.end();
         const resSend = response.rowCount
@@ -29,8 +28,7 @@ export default class TodoController {
 
   public getAllTasks(req: Request, res: Response) {
     console.log("hello getalltask");
-    const client = new pg.Client("postgres://localhost/todo");
-    client.connect();
+    let client = new DBConnect().connect();
     (async function hit() {
       try {
         const response = await client.query("SELECT * FROM todo_info");
@@ -41,14 +39,12 @@ export default class TodoController {
         res
           .status(500)
           .send([{ message: "Server Not Found Error!", status: false }, err]);
-        console.log("inside catch block");
       }
     })();
   }
 
   public getTaskById(req: Request, res: Response) {
-    const client = new pg.Client("postgres://localhost/todo");
-    client.connect();
+    let client = new DBConnect().connect();
     const { id } = req.params;
     (async function hit() {
       try {
@@ -67,8 +63,7 @@ export default class TodoController {
   }
 
   public deleteTask(req: Request, res: Response) {
-    const client = new pg.Client("postgres://localhost/todo");
-    client.connect();
+    let client = new DBConnect().connect();
     const { id } = req.params;
     (async function hit() {
       try {
@@ -79,43 +74,37 @@ export default class TodoController {
         client.end();
         const resSend = response.rowCount
           ? { message: "Todo deleted successfully", status: true }
-          : { message: "Unable deleted a todo", status: false };
+          : { message: "Unable deleted a todo, it might already have been deleted", status: false };
         res.status(200).send([resSend]);
       } catch (err) {
         res
           .status(500)
-          .send([{ message: "Unable to delete", status: false }, err]);
+          .send([{ message: "Unable deleted a todo, it might already have been deleted", status: false }, err]);
       }
     })();
   }
 
   public updateTask(req: Request, res: Response) {
-    const client = new pg.Client("postgres://localhost/todo");
-    client.connect();
-    const { done } = req.body;
+    let client = new DBConnect().connect();
+    const { title, description, done } = req.body;
     const { id } = req.params;
     (async function hit() {
       try {
         const response = await client.query(
-          `UPDATE todo_info 
-        SET DONE = $1
-        WHERE ID = $2`,
-          [done, id]
+          `UPDATE todo_info
+            SET (title, discription, done) = ($1, $2, $3)
+            WHERE id = $4`,
+          [title, description, done, id]
         );
         client.end();
-        const resSend = response.rowCount
-          ? done
-            ? { message: "Todo added to done list successfully", status: true }
-            : {
-                message: "Todo added to undone list successfully",
-                status: true
-              }
-          : { message: "Unable update a todo", status: false };
+        const resSend = response.rowCount ?
+            { message: "Todo updated successfully", status: true } :
+            { message: "Unable update a todo", status: false };
         res.status(200).send([resSend]);
       } catch (err) {
         res
           .status(500)
-          .send([{ message: "Unable to update", status: false }, err]);
+          .send([{ message: "Unable to update", status: false }, err.message]);
       }
     })();
   }

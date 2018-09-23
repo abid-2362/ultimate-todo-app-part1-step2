@@ -22,9 +22,9 @@ describe("Get Todos", () => {
 
 // Get a specific Todo
 describe("GET a single Todo", function() {
-  it("Retrieve a task", function(done) {
+  it("Retrieve a specific task", function(done) {
     request(app)
-      .get("/todo/api/v1.0/tasks:id")
+      .get("/todo/api/v1.0/tasks/:id")
       .send("{}")
       .expect(200)
       .end(function(err, res) {

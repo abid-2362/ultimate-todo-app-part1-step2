@@ -2,8 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var app_1 = require("./app");
 var serverConfig_1 = require("./serverConfig");
-var pg = require("pg");
-var client = new pg.Client("postgres://localhost/todo");
+var dbConnection_1 = require("./dbConnection");
+// let db = new DBConnect('localhost', 'node_todo', 'root', '');
+var db = new dbConnection_1.default();
+var client = db.connect();
 // const seed = () => {
 //   const qry = `DROP TABLE IF EXISTS todo_info;
 //   CREATE TABLE todo_info {
