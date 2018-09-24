@@ -15,7 +15,6 @@ class DBConnection {
   // }
 
   public connect() {
-    console.log(pg);
     const client = new pg.Client({
       user: this.dbUser,
       host: this.dbHost,

@@ -17,7 +17,6 @@ var DBConnection = /** @class */ (function () {
     //   this.dbPass = dbPass;
     // }
     DBConnection.prototype.connect = function () {
-        console.log(pg);
         var client = new pg.Client({
             user: this.dbUser,
             host: this.dbHost,
@@ -31,4 +30,3 @@ var DBConnection = /** @class */ (function () {
     return DBConnection;
 }());
 exports.default = DBConnection;
-//# sourceMappingURL=dbConnection.js.map

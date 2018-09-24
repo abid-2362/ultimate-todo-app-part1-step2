@@ -1,6 +1,4 @@
 import { Request, Response } from "express";
-const pg = require("pg");
-const uuid = require("uuid");
 import DBConnect from "../dbConnection";
 export default class TodoController {
   public createNewTask(req: Request, res: Response) {
@@ -17,22 +15,22 @@ export default class TodoController {
       try {
         if (id) {
           response = await client.query(
-            `INSERT INTO todo_info(id,title,discription,done)
-            VALUES($1,$2,$3,$4)`,
-            [id,task.title, task.description, task.done]
+            `INSERT INTO todo_info(id,title,description,done)
+            VALUES($1,$2,$3,$4) RETURNING id, title, description, done`,
+            [id, task.title, task.description, task.done]
           );
         } else {
           response = await client.query(
-            `INSERT INTO todo_info(title,discription,done)
+            `INSERT INTO todo_info(title,description,done)
             VALUES($1,$2,$3)`,
             [task.title, task.description, task.done]
           );
         }
         client.end();
         const resSend = response.rowCount
-          ? { message: "New Todo added", status: true }
+          ? response.rows[0]
           : { message: "Can't add new Todo", status: false };
-        res.status(200).send([resSend]);
+        res.status(200).send(resSend);
       } catch (err) {
         res
           .status(500)
@@ -42,14 +40,12 @@ export default class TodoController {
   }
 
   public getAllTasks(req: Request, res: Response) {
-    console.log("hello getalltask");
     let client = new DBConnect().connect();
     (async function hit() {
       try {
         const response = await client.query("SELECT * FROM todo_info");
         client.end();
         res.status(200).send(response.rows);
-        console.log("inside try block");
       } catch (err) {
         res
           .status(500)
@@ -77,6 +73,32 @@ export default class TodoController {
     })();
   }
 
+  public updateTask(req: Request, res: Response) {
+    let client = new DBConnect().connect();
+    const { title, description, done } = req.body;
+    const { id } = req.params;
+    (async function hit() {
+      try {
+        const response = await client.query(
+          `UPDATE todo_info
+            SET (title, description, done) = ($1, $2, $3)
+            WHERE id = $4
+            RETURNING id, title, description, done`,
+          [title, description, done, id]
+        );
+        client.end();
+        const resSend = response.rowCount
+          ? { status: "ok", newTask: response.rows[0] }
+          : { message: "Unable update a todo", status: false };
+        res.status(200).send(resSend);
+      } catch (err) {
+        res
+          .status(500)
+          .send([{ message: "Unable to update", status: false }, err.message]);
+      }
+    })();
+  }
+
   public deleteTask(req: Request, res: Response) {
     let client = new DBConnect().connect();
     const { id } = req.params;
@@ -88,47 +110,21 @@ export default class TodoController {
         );
         client.end();
         const resSend = response.rowCount
-          ? { message: "Todo deleted successfully", status: true }
+          ? { message: "Todo deleted successfully", status: "ok" }
           : {
               message:
                 "Unable deleted a todo, it might already have been deleted",
               status: false
             };
-        res.status(200).send([resSend]);
+        res.status(200).send(resSend);
       } catch (err) {
         res.status(500).send([
           {
-            message:
-              "Unable deleted a todo, it might already have been deleted",
-            status: false
+            message: "Unable deleted a todo, it might already have been deleted",
+            status: "error"
           },
           err
         ]);
-      }
-    })();
-  }
-
-  public updateTask(req: Request, res: Response) {
-    let client = new DBConnect().connect();
-    const { title, description, done } = req.body;
-    const { id } = req.params;
-    (async function hit() {
-      try {
-        const response = await client.query(
-          `UPDATE todo_info
-            SET (title, discription, done) = ($1, $2, $3)
-            WHERE id = $4`,
-          [title, description, done, id]
-        );
-        client.end();
-        const resSend = response.rowCount
-          ? { message: "Todo updated successfully", status: true }
-          : { message: "Unable update a todo", status: false };
-        res.status(200).send([resSend]);
-      } catch (err) {
-        res
-          .status(500)
-          .send([{ message: "Unable to update", status: false }, err.message]);
       }
     })();
   }

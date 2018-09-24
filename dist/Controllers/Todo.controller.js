@@ -35,8 +35,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var pg = require("pg");
-var uuid = require("uuid");
 var dbConnection_1 = require("../dbConnection");
 var TodoController = /** @class */ (function () {
     function TodoController() {
@@ -59,20 +57,20 @@ var TodoController = /** @class */ (function () {
                         case 0:
                             _a.trys.push([0, 5, , 6]);
                             if (!id) return [3 /*break*/, 2];
-                            return [4 /*yield*/, client.query("INSERT INTO todo_info(id,title,discription,done)\n            VALUES($1,$2,$3,$4)", [id, task.title, task.description, task.done])];
+                            return [4 /*yield*/, client.query("INSERT INTO todo_info(id,title,description,done)\n            VALUES($1,$2,$3,$4) RETURNING id, title, description, done", [id, task.title, task.description, task.done])];
                         case 1:
                             response = _a.sent();
                             return [3 /*break*/, 4];
-                        case 2: return [4 /*yield*/, client.query("INSERT INTO todo_info(title,discription,done)\n            VALUES($1,$2,$3)", [task.title, task.description, task.done])];
+                        case 2: return [4 /*yield*/, client.query("INSERT INTO todo_info(title,description,done)\n            VALUES($1,$2,$3)", [task.title, task.description, task.done])];
                         case 3:
                             response = _a.sent();
                             _a.label = 4;
                         case 4:
                             client.end();
                             resSend = response.rowCount
-                                ? { message: "New Todo added", status: true }
+                                ? response.rows[0]
                                 : { message: "Can't add new Todo", status: false };
-                            res.status(200).send([resSend]);
+                            res.status(200).send(resSend);
                             return [3 /*break*/, 6];
                         case 5:
                             err_1 = _a.sent();
@@ -87,7 +85,6 @@ var TodoController = /** @class */ (function () {
         })();
     };
     TodoController.prototype.getAllTasks = function (req, res) {
-        console.log("hello getalltask");
         var client = new dbConnection_1.default().connect();
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
@@ -101,7 +98,6 @@ var TodoController = /** @class */ (function () {
                             response = _a.sent();
                             client.end();
                             res.status(200).send(response.rows);
-                            console.log("inside try block");
                             return [3 /*break*/, 3];
                         case 2:
                             err_2 = _a.sent();
@@ -143,12 +139,44 @@ var TodoController = /** @class */ (function () {
             });
         })();
     };
+    TodoController.prototype.updateTask = function (req, res) {
+        var client = new dbConnection_1.default().connect();
+        var _a = req.body, title = _a.title, description = _a.description, done = _a.done;
+        var id = req.params.id;
+        (function hit() {
+            return __awaiter(this, void 0, void 0, function () {
+                var response, resSend, err_4;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 2, , 3]);
+                            return [4 /*yield*/, client.query("UPDATE todo_info\n            SET (title, description, done) = ($1, $2, $3)\n            WHERE id = $4\n            RETURNING id, title, description, done", [title, description, done, id])];
+                        case 1:
+                            response = _a.sent();
+                            client.end();
+                            resSend = response.rowCount
+                                ? { status: "ok", newTask: response.rows[0] }
+                                : { message: "Unable update a todo", status: false };
+                            res.status(200).send(resSend);
+                            return [3 /*break*/, 3];
+                        case 2:
+                            err_4 = _a.sent();
+                            res
+                                .status(500)
+                                .send([{ message: "Unable to update", status: false }, err_4.message]);
+                            return [3 /*break*/, 3];
+                        case 3: return [2 /*return*/];
+                    }
+                });
+            });
+        })();
+    };
     TodoController.prototype.deleteTask = function (req, res) {
         var client = new dbConnection_1.default().connect();
         var id = req.params.id;
         (function hit() {
             return __awaiter(this, void 0, void 0, function () {
-                var response, resSend, err_4;
+                var response, resSend, err_5;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -158,54 +186,22 @@ var TodoController = /** @class */ (function () {
                             response = _a.sent();
                             client.end();
                             resSend = response.rowCount
-                                ? { message: "Todo deleted successfully", status: true }
+                                ? { message: "Todo deleted successfully", status: "ok" }
                                 : {
                                     message: "Unable deleted a todo, it might already have been deleted",
                                     status: false
                                 };
-                            res.status(200).send([resSend]);
-                            return [3 /*break*/, 3];
-                        case 2:
-                            err_4 = _a.sent();
-                            res.status(500).send([
-                                {
-                                    message: "Unable deleted a todo, it might already have been deleted",
-                                    status: false
-                                },
-                                err_4
-                            ]);
-                            return [3 /*break*/, 3];
-                        case 3: return [2 /*return*/];
-                    }
-                });
-            });
-        })();
-    };
-    TodoController.prototype.updateTask = function (req, res) {
-        var client = new dbConnection_1.default().connect();
-        var _a = req.body, title = _a.title, description = _a.description, done = _a.done;
-        var id = req.params.id;
-        (function hit() {
-            return __awaiter(this, void 0, void 0, function () {
-                var response, resSend, err_5;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            _a.trys.push([0, 2, , 3]);
-                            return [4 /*yield*/, client.query("UPDATE todo_info\n            SET (title, discription, done) = ($1, $2, $3)\n            WHERE id = $4", [title, description, done, id])];
-                        case 1:
-                            response = _a.sent();
-                            client.end();
-                            resSend = response.rowCount
-                                ? { message: "Todo updated successfully", status: true }
-                                : { message: "Unable update a todo", status: false };
-                            res.status(200).send([resSend]);
+                            res.status(200).send(resSend);
                             return [3 /*break*/, 3];
                         case 2:
                             err_5 = _a.sent();
-                            res
-                                .status(500)
-                                .send([{ message: "Unable to update", status: false }, err_5.message]);
+                            res.status(500).send([
+                                {
+                                    message: "Unable deleted a todo, it might already have been deleted",
+                                    status: "error"
+                                },
+                                err_5
+                            ]);
                             return [3 /*break*/, 3];
                         case 3: return [2 /*return*/];
                     }
@@ -216,4 +212,3 @@ var TodoController = /** @class */ (function () {
     return TodoController;
 }());
 exports.default = TodoController;
-//# sourceMappingURL=Todo.controller.js.map
