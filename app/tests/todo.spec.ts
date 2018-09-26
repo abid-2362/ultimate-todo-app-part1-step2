@@ -45,30 +45,30 @@ describe("Todo Rest API Tests", () => {
   // get todo by id
   describe("Get TodoById", () => {
 
-      it("checks if a specific task is being fetched properly", async () => {
-        const resp = await request(app).get(`${url}/tasks/${testTodoId}`);
-        expect(resp.status).toBe(200);
-        expect(resp.body).toEqual(expect.objectContaining({}));
-      });
+    it("checks if a specific task is being fetched properly", async () => {
+      const resp = await request(app).get(`${url}/tasks/${testTodoId}`);
+      expect(resp.status).toBe(200);
+      expect(resp.body).toEqual(expect.objectContaining({}));
+    });
 
-      it("returns error if id is not found or invalid", async () => {
-        let invalidId = "123123123";
-        const resp = await request(app).get(`${url}/tasks/${invalidId}`);
-        expect(resp.status).toBe(200);
-        expect(resp.body).toEqual(
-          expect.objectContaining({status: "error", message: "invalid id"})
-        );
-      });
+    it("returns error if id is not found or invalid", async () => {
+      let invalidId = "123123123";
+      const resp = await request(app).get(`${url}/tasks/${invalidId}`);
+      expect(resp.status).toBe(200);
+      expect(resp.body).toEqual(
+        expect.objectContaining({status: "error", message: "invalid id"})
+      );
+    });
   });
 
   // Update Todo
   describe("Update Todo", () => {
+    let todoToUpdate = {
+      title: "update",
+      description: "updated description",
+      done: true
+    };
     it("should update the existing Todo", async () => {
-      let todoToUpdate = {
-        title: "update",
-        description: "updated description",
-        done: true
-      };
       const resp = await request(app)
         .put(`${url}/tasks/${testTodoId}`)
         .send(todoToUpdate);
@@ -79,6 +79,37 @@ describe("Todo Rest API Tests", () => {
         expect.objectContaining({ status: "ok", newTask: updatedTodo })
       );
     });
+
+    it("should return error and not update if title is missing", async () => {
+      let invalidUpdate = JSON.parse(JSON.stringify(todoToUpdate));
+      delete invalidUpdate.title;
+      const resp = await request(app)
+        .put(`${url}/tasks/${testTodoId}`)
+        .send(invalidUpdate);
+      expect(resp.status).toBe(200);
+      expect(resp.body).toEqual(expect.objectContaining({ status: "error" }));
+    });
+
+    it("should return error and not update if description is missing", async () => {
+      let invalidUpdate = JSON.parse(JSON.stringify(todoToUpdate));
+      delete invalidUpdate.description;
+      const resp = await request(app)
+        .put(`${url}/tasks/${testTodoId}`)
+        .send(invalidUpdate);
+      expect(resp.status).toBe(200);
+      expect(resp.body).toEqual(expect.objectContaining({ status: "error" }));
+    });
+
+    it("should return error and not update if done status is missing", async () => {
+      let invalidUpdate = JSON.parse(JSON.stringify(todoToUpdate));
+      delete invalidUpdate.done;
+      const resp = await request(app)
+        .put(`${url}/tasks/${testTodoId}`)
+        .send(invalidUpdate);
+      expect(resp.status).toBe(200);
+      expect(resp.body).toEqual(expect.objectContaining({ status: "error" }));
+    });
+
   });
 
   // Delete a Todo
