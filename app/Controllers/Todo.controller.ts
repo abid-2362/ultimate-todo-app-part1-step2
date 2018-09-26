@@ -64,11 +64,12 @@ export default class TodoController {
           [id]
         );
         client.end();
-        res.status(200).send(response.rows);
+        if (response.rows.length < 1)
+          res.send({status: "error", message: "invalid id"});
+        else
+          res.status(200).send(response.rows);
       } catch (err) {
-        res
-          .status(500)
-          .send([{ message: "Server Error!", status: false }, err]);
+        res.status(500).send({ status: "error", message: "Server Error" });
       }
     })();
   }
@@ -120,7 +121,8 @@ export default class TodoController {
       } catch (err) {
         res.status(500).send([
           {
-            message: "Unable deleted a todo, it might already have been deleted",
+            message:
+              "Unable deleted a todo, it might already have been deleted",
             status: "error"
           },
           err
