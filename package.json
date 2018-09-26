@@ -4,7 +4,7 @@
   "description": "to do rest api with type script",
   "main": "dist/server.js",
   "scripts": {
-    "test": "npx jest --watch",
+    "test": "npx jest",
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node dist/server.js"

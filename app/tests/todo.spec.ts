@@ -13,15 +13,20 @@ let testTodo = {
   done: false
 };
 describe("Todo Rest API Tests", () => {
-
   // Create a new Todo
-  describe('Create a new Todo', () => {
-    it('should create a new todo and return it', async () => {
-      const resp = await request(app).post(`${url}/tasks`).send(testTodo);
+  describe("Create a new Todo", () => {
+    it("should create a new todo and return it", async () => {
+      const resp = await request(app)
+        .post(`${url}/tasks`)
+        .send(testTodo);
       expect(resp.status).toBe(200);
       // should return the same todo which we have just passed it to be created
       expect(resp.body).toEqual(
-        expect.objectContaining({id: testTodo.id, title: testTodo.title, description: testTodo.description})
+        expect.objectContaining({
+          id: testTodo.id,
+          title: testTodo.title,
+          description: testTodo.description
+        })
       );
     });
   });
@@ -39,40 +44,48 @@ describe("Todo Rest API Tests", () => {
 
   // get todo by id
   describe("Get TodoById", () => {
-    it("checks if a specific task is being fetched properly", async () => {
-      const resp = await request(app).get(`${url}/tasks/${testTodoId}`);
-      expect(resp.status).toBe(200);
-      expect(resp.body).toEqual(
-        expect.objectContaining({})
-      );
-    });
+
+      it("checks if a specific task is being fetched properly", async () => {
+        const resp = await request(app).get(`${url}/tasks/${testTodoId}`);
+        expect(resp.status).toBe(200);
+        expect(resp.body).toEqual(expect.objectContaining({}));
+      });
+
+      it("returns error if id is not found or invalid", async () => {
+        let invalidId = "123123123";
+        const resp = await request(app).get(`${url}/tasks/${invalidId}`);
+        expect(resp.status).toBe(200);
+        expect(resp.body).toEqual(
+          expect.objectContaining({status: "error", message: "invalid id"})
+        );
+      });
   });
 
   // Update Todo
-  describe('Update Todo', () => {
-    it('should update the existing Todo', async () => {
+  describe("Update Todo", () => {
+    it("should update the existing Todo", async () => {
       let todoToUpdate = {
-        title: 'update',
-        description: 'updated description',
+        title: "update",
+        description: "updated description",
         done: true
-      }
-      const resp = await request(app).put(`${url}/tasks/${testTodoId}`).send(todoToUpdate);
+      };
+      const resp = await request(app)
+        .put(`${url}/tasks/${testTodoId}`)
+        .send(todoToUpdate);
       let updatedTodo = resp.body.newTask;
-      delete(updatedTodo.id);
+      delete updatedTodo.id;
       expect(resp.status).toBe(200);
       expect(resp.body).toEqual(
-        expect.objectContaining({status: "ok", newTask: updatedTodo})
+        expect.objectContaining({ status: "ok", newTask: updatedTodo })
       );
     });
   });
 
   // Delete a Todo
   describe("Delete a Todo", () => {
-    it('should delete the demo todo', async () => {
+    it("should delete the demo todo", async () => {
       const resp = await request(app).delete(`${url}/tasks/${testTodoId}`);
-      expect(resp.body).toEqual(
-        expect.objectContaining({status: "ok"})
-      );
+      expect(resp.body).toEqual(expect.objectContaining({ status: "ok" }));
     });
   });
 });
