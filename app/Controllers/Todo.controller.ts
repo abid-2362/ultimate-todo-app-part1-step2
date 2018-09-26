@@ -10,7 +10,7 @@ export default class TodoController {
     } else {
       id = null;
     }
-    (async function hit() {
+    (async function() {
       let response: any;
       try {
         if (id) {
@@ -41,7 +41,7 @@ export default class TodoController {
 
   public getAllTasks(req: Request, res: Response) {
     let client = new DBConnect().connect();
-    (async function hit() {
+    (async function() {
       try {
         const response = await client.query("SELECT * FROM todo_info");
         client.end();
@@ -57,7 +57,7 @@ export default class TodoController {
   public getTaskById(req: Request, res: Response) {
     let client = new DBConnect().connect();
     const { id } = req.params;
-    (async function hit() {
+    (async function() {
       try {
         const response = await client.query(
           "SELECT * FROM todo_info WHERE ID = $1",
@@ -77,8 +77,12 @@ export default class TodoController {
   public updateTask(req: Request, res: Response) {
     let client = new DBConnect().connect();
     const { title, description, done } = req.body;
+    if(!title || !description || !done) {
+      res.send({status: "error", message: "Title, Description or Done status is missing in update request"});
+      return;
+    }
     const { id } = req.params;
-    (async function hit() {
+    (async function() {
       try {
         const response = await client.query(
           `UPDATE todo_info
@@ -103,7 +107,7 @@ export default class TodoController {
   public deleteTask(req: Request, res: Response) {
     let client = new DBConnect().connect();
     const { id } = req.params;
-    (async function hit() {
+    (async function() {
       try {
         const response = await client.query(
           `DELETE FROM todo_info WHERE ID = $1`,
