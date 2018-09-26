@@ -29,6 +29,28 @@ describe("Todo Rest API Tests", () => {
         })
       );
     });
+
+    it("should return error if title is missing in request", async () => {
+      let todo = JSON.parse(JSON.stringify(testTodo));
+      delete todo.title;
+      const resp = await request(app)
+        .post(`${url}/tasks`)
+        .send(todo);
+      expect(resp.status).toBe(200);
+      // should return the same todo which we have just passed it to be created
+      expect(resp.body).toEqual(expect.objectContaining({ status: "error" }));
+    });
+
+    it("should return error if description is missing in request", async () => {
+      let todo = JSON.parse(JSON.stringify(testTodo));
+      delete todo.description;
+      const resp = await request(app)
+        .post(`${url}/tasks`)
+        .send(todo);
+      expect(resp.status).toBe(200);
+      // should return the same todo which we have just passed it to be created
+      expect(resp.body).toEqual(expect.objectContaining({ status: "error" }));
+    });
   });
 
   // get all todos

@@ -4,6 +4,11 @@ export default class TodoController {
   public createNewTask(req: Request, res: Response) {
     let client = new DBConnect().connect();
     const task = req.body;
+    let {title, description} = req.body;
+    if(!title || !description) {
+      res.send({status: "error", message: "invalid create todo request, Title or Description is missing"});
+      return;
+    }
     let id: number;
     if (req.body.id) {
       id = req.body.id;
